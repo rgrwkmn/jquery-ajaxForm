@@ -4,6 +4,6 @@
     "main": "jquery.ajaxForm.js",
     "dependencies": {
         "jquery": ">=1.0",
-        "jquery-serializeForm": "https://github.com/rgrwkmn/jquery-serializeForm.git"
+        "jquery-serializeForm-rgrwkmn": "https://github.com/rgrwkmn/jquery-serializeForm.git#latest"
     }
 }
