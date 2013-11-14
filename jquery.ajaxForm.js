@@ -49,6 +49,9 @@ define('jquery.ajaxForm', ['jquery', 'jquery.serializeForm'], function($) {
                 event.preventDefault();
 
                 var data = $.extend(true, $form.serializeForm({ checkboxBoolean: options.checkboxBoolean }), addData);
+                if (options.data) {
+                    data = $.extend(true, data, options.data);
+                }
 
                 if (typeof options.beforeSubmit === 'function') {
                     var newData = options.beforeSubmit.call(this, data);
@@ -62,8 +65,8 @@ define('jquery.ajaxForm', ['jquery', 'jquery.serializeForm'], function($) {
                 $form.addClass(options.ajaxSubmittingClass);
 
                 $.ajax({
-                    url: $form.attr('action'),
-                    type: $form.attr('method'),
+                    url: options.url || $form.attr('action'),
+                    type: options.method || $form.attr('method'),
                     dataType: options.dataType || 'json',
                     data: data,
                     success: function(response, textStatus, xhr) {
