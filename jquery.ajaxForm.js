@@ -15,6 +15,7 @@ define('jquery.ajaxForm', ['jquery', 'jquery.serializeForm'], function($) {
      * @param options.error {Function} Called in the AJAX error callback. Called in the scope of the form element.
      * @param options.beforeSubmit {Function} Called before making the AJAX request. Called in the scope of the form element. The form data is passed as the first argument. Return false to prevent the form from submitting. If you return an object it will be used instead of the original form data, so you can modify the form data however you want from your script before submitting.
      * @param options.submitOnCheck {Boolean} Whether or not so submit the form when any of its checkboxes change.
+     * @param options.disableOnSubmit {Boolean} Whether or not to disable all of the inputs in the form while it is submitting.
      * @param options.checkboxBoolean {Boolean|Number} Wether or not to serialize checkboxes as boolean or number (0,1) values instead of the default.
      * @param options.url {String} A custom url for the AJAX request (defaults to the form's action)
      * @param options.type {String} A custom HTTP method for the AJAX request (defaults to the form's method)
@@ -33,7 +34,8 @@ define('jquery.ajaxForm', ['jquery', 'jquery.serializeForm'], function($) {
 
         var options = {
             checkboxBoolean: true,
-            ajaxSubmittingClass: 'ajax-submitting'
+            ajaxSubmittingClass: 'ajax-submitting',
+            disableOnSubmit: true
         };
         if (o) {
             $.extend(true, options, o);
@@ -42,6 +44,7 @@ define('jquery.ajaxForm', ['jquery', 'jquery.serializeForm'], function($) {
         var delegate = options.delegate || document;
 
         var selector = options.selector || this.selector;
+
         $(delegate)
             .undelegate(selector, 'submit.ajaxForm')
             .delegate(selector, 'submit.ajaxForm', function(event) {
@@ -71,17 +74,27 @@ define('jquery.ajaxForm', ['jquery', 'jquery.serializeForm'], function($) {
                     data: data,
                     success: function(response, textStatus, xhr) {
                         $form.removeClass(options.ajaxSubmittingClass);
+                        if (options.disableOnSubmit) {
+                            $form.enableForm();
+                        }
                         if (typeof options.success === 'function') {
                             options.success.call($form[0], response, textStatus, xhr, data);
                         }
                     },
                     error: function(a, b, c) {
                         $form.removeClass(options.ajaxSubmittingClass);
+                        if (options.disableOnSubmit) {
+                            $form.enableForm();
+                        }
                         if (typeof options.error === 'function') {
                             options.error.call($form[0], a, b, c);
                         }
                     }
                 });
+
+                if (options.disableOnSubmit) {
+                    $form.disableForm();
+                }
             });
 
         if (options.submitOnCheck) {
@@ -104,16 +117,40 @@ define('jquery.ajaxForm', ['jquery', 'jquery.serializeForm'], function($) {
 
         var $form = this;
         var $error = $form.find('.form-error');
-        if (!$error.length) {
-            $error = $('<div class="form-error"><span class="form-error-message"></span> <input type="button" value="OK"></div>').appendTo($form);
 
-            $error.find('input[type=button]').click(function() {
+        if (!$error.length) {
+            $error = $('<div class="form-error"><span class="form-error-message"></span> <input type="button" value="Dismiss"></div>').appendTo($form);
+        }
+
+        $error.find('input[type=button]').click(function() {
                 $error.hide();
             });
-        }
+
         $error
             .show()
             .find('.form-error-message')
+            .html(message);
+
+        return this;
+    }
+
+    $.fn.formSuccess = function(options) {
+        var message = options.message || options;
+
+        var $form = this;
+        var $success = $form.find('.form-success');
+
+        if (!$success.length) {
+            $success = $('<div class="form-success"><span class="form-success-message"></span> <input type="button" value="Dismiss"></div>').appendTo($form);
+        }
+
+        $success.find('input[type=button]').click(function() {
+            $success.hide();
+        });
+
+        $success
+            .show()
+            .find('.form-success-message')
             .html(message);
 
         return this;
@@ -172,4 +209,21 @@ define('jquery.ajaxForm', ['jquery', 'jquery.serializeForm'], function($) {
 
         return this;
     }
+
+    $.fn.disableForm = function() {
+        this.each(function() {
+            $(this).addClass('disabled').find(':input').attr('disabled', 'disabled');
+        });
+
+        return this;
+    }
+
+    $.fn.enableForm = function() {
+        this.each(function() {
+            $(this).removeClass('disabled').find(':input').removeAttr('disabled');
+        });
+
+        return this;
+    }
+
 });
