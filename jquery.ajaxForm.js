@@ -69,7 +69,7 @@ define('jquery.ajaxForm', ['jquery', 'jquery.serializeForm'], function($) {
 
                 $.ajax({
                     url: options.url || $form.attr('action'),
-                    type: options.method || $form.attr('method'),
+                    type: options.type || $form.attr('method'),
                     dataType: options.dataType || 'json',
                     data: data,
                     success: function(response, textStatus, xhr) {
